@@ -96,7 +96,7 @@ def resolve_and_move(
 
 
 # Moving acquisitions / sessions (rename-on-conflict)
-def move_or_rename_acquisition(fw, acq, destination_session):
+def rename_and_move_acquisition(fw, acq, destination_session):
     """
     If an acquisition with the same label already exists in the destination_session, rename it first then move it
     """
@@ -126,7 +126,7 @@ def move_acq(fw, acq, destination_project, subject_label, session_label):
             except Exception as e:
                 print(f"Error creating session '{session_label}': {e}")
         destination_session = destination_session.reload()
-        acq = move_or_rename_acquisition(fw, acq, destination_session)
+        acq = rename_and_move_acquisition(fw, acq, destination_session)
     return acq, destination_session
 
 

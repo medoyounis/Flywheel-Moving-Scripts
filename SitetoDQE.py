@@ -27,7 +27,7 @@ destination_project_name = "DQE"
 excluded_initials = {"FP", "FA", "OCT", "FAF", "RE", "LE", "OU", "CERT"}
 
 # Retry in case Flywheel times out
-def flywheel_modify_with_retry(modify_func, object_id, body, object_type="object", retries=5):
+def flywheel_modify_with_retry(modify_func, object_id, body, object_type="object", retries=4):
     for attempt in range(retries):
         try:
             return modify_func(object_id, body)
@@ -182,13 +182,13 @@ def handle_visit1_session(
     fw, fw_client, session, subject, project, subject_label, session_label,
     destination_project,
 ):
-    all_acqs = list(session.acquisitions())
-    if not any(len(a.files) > 0 for a in all_acqs):
+    acquisitions=session.acquisitions()
+    if not any(len(a.files) > 0 for a in list(acquisitions)):
         return  # no files anywhere in the session, skip
 
     found_oct = False
 
-    for acq in session.acquisitions():
+    for acq in acquisitions:
         if "oct" in acq.label.lower():
             assignee = ""    #modify this
             protocol_label = ""     #modify this
@@ -230,8 +230,8 @@ def handle_visit1_session(
 
 def handle_uploader_acknowledgement_session(fw, session, project, session_label, destination_project3, group_ids2):
     new_subject_label = f"ABID - {extract_prefix(project.label)}"
-
-    for acq in session.acquisitions():
+    acquisitions=session.acquisitions()
+    for acq in acquisitions:
         if len(acq.files) == 0:
             continue
 
@@ -256,7 +256,7 @@ def handle_uploader_acknowledgement_session(fw, session, project, session_label,
         acquisitions=session.acquisitions()
         for a in acquisitions:
             print(f'Moving acquisition "{a.label}"')
-            move_or_rename_acquisition(fw, a, existing_session)
+            rename_and_move_acquisition(fw, a, existing_session)
         return
 
 
@@ -292,7 +292,7 @@ def handle_certification_session(fw, session, subject_label, session_label, proj
                 acquisition = fw.get_acquisition(acquisition.id)
                 break
 
-        move_or_rename_acquisition(fw, acquisition, destination_session)
+        rename_and_move_acquisition(fw, acquisition, destination_session)
 
 
 def main():
@@ -347,7 +347,7 @@ def main():
             subject_label = subject.label if subject else "default"
 
             destination_subject = destination_project.subjects.find_first(f'label="{subject_label}"')
-            if not destination_subject:
+            if not destination_subject: #currently it adds all of the subjects to the destination project on the first run, to help speed things up in future runs
                 print(f"Creating subject '{subject_label}' in destination project")
                 destination_project.add_subject(label=subject_label)
             if session_label == "Patient Information":

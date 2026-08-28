@@ -121,8 +121,9 @@ def move_acq(fw, acq, destination_project, subject_label, session_label):
                 destination_session = destination_project.add_session(label=session_label, subject=destination_subject.id)
             except Exception as e:
                 print(f"Error creating session '{session_label}': {e}")
-        destination_session = destination_session.reload()
-        acq = rename_and_move_acquisition(fw, acq, destination_session)
+        if destination_session:
+            destination_session = destination_session.reload()
+            acq = rename_and_move_acquisition(fw, acq, destination_session)
     return acq, destination_session
 
 

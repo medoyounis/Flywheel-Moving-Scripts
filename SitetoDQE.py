@@ -80,9 +80,7 @@ def resolve_and_move(
     protocol_label, assignee, also_move=None, task_target="self",
 ):
     
-
     acq, destination_session = move_acq(fw, acq, destination_project, subject_label, session_label)
-
     if task_target == "self":
         create_task(fw_client, acq, destination_session, protocol_label, assignee)
     elif task_target == "companion":
@@ -93,9 +91,7 @@ def resolve_and_move(
         raise ValueError(f"Unknown task_target: {task_target}")
 
     
-
-
-# Moving acquisitions / sessions (rename-on-conflict)
+# Moving acquisitions / sessions (rename when there is a conflict)
 def rename_and_move_acquisition(fw, acq, destination_session):
     """
     If an acquisition with the same label already exists in the destination_session, rename it first then move it
@@ -194,11 +190,11 @@ def handle_visit1_session(
 
     for acq in session.acquisitions():
         if "oct" in acq.label.lower():
-            assignee = ""#modify this
-            protocol_label = ""#modify this
+            assignee = ""    #modify this
+            protocol_label = ""     #modify this
         else:
-            assignee = ""#modify this
-            protocol_label = ""#modify this
+            assignee = ""       #modify this
+            protocol_label = ""    #modify this
 
         if "oct" in acq.label.lower():
 
@@ -257,7 +253,8 @@ def handle_uploader_acknowledgement_session(fw, session, project, session_label,
             return
 
         print(f'Session "{session.label}" already exists.')
-        for a in session.acquisitions():
+        acquisitions=session.acquisitions()
+        for a in acquisitions:
             print(f'Moving acquisition "{a.label}"')
             move_or_rename_acquisition(fw, a, existing_session)
         return
@@ -275,8 +272,8 @@ def handle_certification_session(fw, session, subject_label, session_label, proj
     if not destination_subject:
         print(f"Creating subject '{new_subject_label}' in destination project")
         destination_subject = destination_project3.add_subject(label=new_subject_label)
-
-    for acquisition in session.acquisitions():
+    acquisitions=session.acquisitions()
+    for acquisition in acquisitions:
         if len(acquisition.files) == 0:
             continue
 
